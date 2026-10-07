@@ -30,3 +30,6 @@ Company landing page for Greyscale Analytica, a market intelligence product for 
   **Rejected:** Next.js + Shadcn Blocks for now — slower to a first look; revisit for production.
 - **What:** Audience is corporate strategy, product, corporate development and leadership teams (business market intelligence, not financial markets).
   **Why:** Sam's answer, 2026-10-07.
+- **What:** Host on GitHub Pages at `greyscaleanalytica.com` (DNS at Porkbun). The repo is public; the `Deploy site` workflow publishes only `prototype/`.
+  **Why:** Sam's call, 2026-10-07. Pages on a private repo needs a paid GitHub plan.
+  **Rejected:** a separate public repo holding only the site (manual syncing); upgrading to GitHub Pro (cost).
