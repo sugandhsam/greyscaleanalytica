@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quantum Particulate — Render Matrix</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    <script src="https://code.iconify.design/iconify-icon/1.0.7/iconify-icon.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'ui-sans-serif', 'system-ui', '-apple-system', 'sans-serif'],
+                        mono: ['ui-monospace', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', 'monospace'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#fafafa',
+                            100: '#f4f4f5',
+                            200: '#e4e4e7',
+                            800: '#27272a',
+                            900: '#18181b',
+                            accent: '#8b5cf6' // Violet
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-brand-50 text-brand-900 font-sans antialiased m-0 selection:bg-brand-accent/20">
+
+    <div class="flex flex-col lg:flex-row w-full min-h-screen relative overflow-x-hidden">
+        
+        <!-- Left: Scrollable Info Panel -->
+        <aside class="ui-panel w-full lg:w-[45%] xl:w-[40%] bg-white flex flex-col relative z-20 border-b lg:border-b-0 lg:border-r border-brand-200 shadow-[20px_0_40px_rgba(0,0,0,0.03)] opacity-0">
+            
+            <!-- Header -->
+            <header class="ui-element flex items-center justify-between p-6 lg:p-8 border-b border-brand-100 opacity-0">
+                <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 rounded-full bg-brand-50 border border-brand-200 flex items-center justify-center text-brand-900">
+                        <iconify-icon icon="solar:cpu-linear" stroke-width="1.5" class="text-lg"></iconify-icon>
+                    </div>
+                    <span class="text-xs font-medium tracking-widest uppercase text-brand-800">Matrix Engine</span>
+                </div>
+                <div class="flex items-center gap-2 text-xs font-mono text-brand-800/50">
+                    <iconify-icon icon="solar:history-linear" stroke-width="1.5"></iconify-icon>
+                    v2.4.0
+                </div>
+            </header>
+
+            <!-- Main Content Area -->
+            <div class="flex-1 flex flex-col justify-center p-6 lg:p-12 xl:p-16 py-20 lg:py-12">
+                
+                <!-- Title Group -->
+                <div class="ui-element mb-12 opacity-0">
+                    <div class="flex items-center gap-3 mb-4 text-xs font-mono tracking-[0.2em] uppercase text-brand-accent">
+                        <span class="w-2 h-2 rounded-full bg-brand-accent animate-pulse"></span>
+                        Sequence 01
+                    </div>
+                    <h1 class="text-5xl lg:text-6xl xl:text-7xl font-light tracking-tighter leading-[1.1] text-brand-900">
+                        Quantum<br>
+                        <span class="text-brand-800/40">Particulate</span>
+                    </h1>
+                </div>
+
+                <!-- Premium Gradient Border Card -->
+                <div class="ui-element relative rounded-2xl p-6 lg:p-8 mb-16 shadow-sm opacity-0" 
+                     style="background: linear-gradient(#ffffff, #ffffff) padding-box, linear-gradient(135deg, rgba(139, 92, 246, 0.3), rgba(228, 228, 231, 0.6)) border-box; border: 1px solid transparent;">
+                    
+                    <div class="flex flex-col gap-6">
+                        <div class="flex justify-between items-end border-b border-brand-100 pb-4">
+                            <div>
+                                <div class="text-xs font-mono tracking-widest uppercase text-brand-800/50 mb-1">Active Nodes</div>
+                                <div class="text-2xl font-medium tracking-tight text-brand-900"><span id="ptCount">0</span></div>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-xs font-mono tracking-widest uppercase text-brand-800/50 mb-1">State</div>
+                                <div class="flex items-center gap-2 justify-end text-sm font-medium text-brand-800">
+                                    <i id="led" class="w-1.5 h-1.5 rounded-full bg-brand-accent"></i>
+                                    <span id="stateTxt">INITIALIZING</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-2 text-xs font-medium text-brand-800 bg-brand-50 px-3 py-1.5 rounded-md border border-brand-200">
+                                <iconify-icon icon="solar:mouse-minimalistic-linear" class="text-base" stroke-width="1.5"></iconify-icon>
+                                Kinetic Interaction Enabled
+                            </div>
+                            <div class="text-xs font-mono text-brand-800/40" id="coords">
+                                CLB 0.00
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Scroll Indicator (Triggers Masked Reveal Context) -->
+                <div class="ui-element hidden lg:flex flex-col items-center gap-4 my-8 opacity-0">
+                    <div class="text-xs font-mono uppercase tracking-[0.2em] text-brand-800/30">Scroll Depth</div>
+                    <div class="h-24 w-px bg-brand-200 relative overflow-hidden">
+                        <div class="scroll-line absolute top-0 w-full h-1/3 bg-brand-accent"></div>
+                    </div>
+                </div>
+
+                <!-- Masked Word Reveal Section -->
+                <div class="reveal-trigger mt-12 lg:mt-24 pb-20">
+                    <h3 class="text-xs font-mono tracking-[0.25em] uppercase text-brand-800/40 mb-6">Volumetric Synthesis</h3>
+                    <p class="reveal-text text-lg lg:text-xl leading-relaxed font-light text-brand-800/80 tracking-tight">
+                        Formulating a dynamic cloud of <span id="pCount2" class="font-medium text-brand-900">0</span> quantum nodes. The spatial engine maps procedural geometric data, transitioning scattered elements into a cohesive, high-fidelity structure driven by orbital mechanics.
+                    </p>
+                </div>
+
+            </div>
+        </aside>
+
+        <!-- Right: Fixed WebGL Canvas -->
+        <main class="ui-panel relative w-full lg:w-[55%] xl:w-[60%] h-[60vh] lg:h-screen lg:sticky top-0 bg-brand-50 overflow-hidden z-10 flex items-center justify-center opacity-0">
+            
+            <!-- Decorative Background Grid -->
+            <div class="absolute inset-0 pointer-events-none opacity-20 z-0" style="background-size: 40px 40px; background-image: linear-gradient(to right, #e4e4e7 1px, transparent 1px), linear-gradient(to bottom, #e4e4e7 1px, transparent 1px);"></div>
+            
+            <!-- Corner Accents -->
+            <div class="absolute top-8 left-8 w-8 h-8 border-t border-l border-brand-800/20 z-20"></div>
+            <div class="absolute bottom-8 right-8 w-8 h-8 border-b border-r border-brand-800/20 z-20"></div>
+            
+            <!-- Canvas -->
+            <div class="absolute inset-0 z-10 overflow-hidden flex items-center justify-center">
+                <canvas id="gl" class="w-full h-full block opacity-90"></canvas>
+            </div>
+
+            <!-- Overlay Axis Label -->
+            <div class="absolute bottom-8 left-8 text-xs font-mono tracking-[0.3em] uppercase text-brand-800/30 z-20 hidden md:block">
+                Z-Depth · Procedural
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // --- 1. GSAP Layout & Masked Reveal Setup ---
+        gsap.registerPlugin(ScrollTrigger);
+
+        // Intro Animations
+        const tl = gsap.timeline();
+        tl.to('.ui-panel', { opacity: 1, duration: 1, stagger: 0.2, ease: "power2.out" })
+          .fromTo('.ui-element', 
+            { y: 30, opacity: 0 }, 
+            { y: 0, opacity: 1, duration: 0.8, stagger: 0.1, ease: "power3.out" }, 
+            "-=0.5"
+          );
+
+        gsap.to('.scroll-line', { 
+            y: 96, // height of line container
+            repeat: -1, 
+            duration: 1.5, 
+            ease: "power1.inOut",
+            yoyo: true
+        });
+
+        gsap.to("#led", {
+            opacity: 0.2, duration: 0.8, repeat: -1, yoyo: true, ease: "power1.inOut"
+        });
+
+        // Masked Word Reveal Logic
+        function applyWordReveal(selector) {
+            const container = document.querySelector(selector);
+            if(!container) return;
+            
+            const processNode = (node) => {
+                if (node.nodeType === 3) { 
+                    const text = node.nodeValue.trim();
+                    if(!text) return document.createTextNode(' ');
+                    const words = text.split(/\s+/);
+                    const frag = document.createDocumentFragment();
+                    words.forEach((word, i) => {
+                        const wrapper = document.createElement('span');
+                        wrapper.className = 'inline-flex overflow-hidden align-top pb-1 mr-[0.3em]';
+                        wrapper.innerHTML = `<span class="word-inner translate-y-[120%] opacity-0 inline-block">${word}</span>`;
+                        frag.appendChild(wrapper);
+                        if(i < words.length - 1) frag.appendChild(document.createTextNode(' '));
+                    });
+                    return frag;
+                } else if (node.nodeType === 1 && !node.classList.contains('word-inner')) {
+                    node.classList.add('inline-flex', 'overflow-hidden', 'align-top', 'pb-1', 'mr-[0.3em]');
+                    const innerSpan = document.createElement('span');
+                    innerSpan.className = 'word-inner translate-y-[120%] opacity-0 inline-block';
+                    while(node.firstChild) innerSpan.appendChild(node.firstChild);
+                    node.appendChild(innerSpan);
+                    return node;
+                }
+                return node;
+            };
+
+            const childNodes = Array.from(container.childNodes);
+            container.innerHTML = '';
+            childNodes.forEach(child => {
+                container.appendChild(processNode(child));
+            });
+        }
+
+        applyWordReveal('.reveal-text');
+
+        // Trigger the reveal on scroll (or delay if visible)
+        gsap.to('.word-inner', {
+            y: "0%", 
+            opacity: 1, 
+            duration: 0.8, 
+            ease: "power4.out", 
+            stagger: 0.015,
+            scrollTrigger: {
+                trigger: '.reveal-trigger',
+                start: "top 85%",
+                toggleActions: "play none none reverse"
+            }
+        });
+
+
+        // --- 2. WebGL Particle Engine ---
+        (function(){
+            "use strict";
+
+            const container = document.querySelector("main");
+            const canvas = document.getElementById("gl");
+            const elState = document.getElementById("stateTxt");
+            const elCoords = document.getElementById("coords");
+            const elPt = document.getElementById("ptCount");
+            const elPt2 = document.getElementById("pCount2");
+
+            const prefersReduced = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+            const isMobile = window.matchMedia && window.matchMedia("(max-width: 1024px)").matches;
+
+            const COUNT = isMobile ? 15000 : 35000;
+            const RENDER_SCALE = window.devicePixelRatio || 1;
+            const POINT_CSS = isMobile ? 3.0 : 2.5;
+
+            elPt.textContent = COUNT.toLocaleString();
+            if(elPt2) elPt2.querySelector('.word-inner').textContent = COUNT.toLocaleString();
+
+            const gl = canvas.getContext("webgl", { alpha:true, premultipliedAlpha:false, antialias:true, depth:false });
+            if(!gl) return;
+
+            // Generate a geometric core shape instead of a head
+            function buildProceduralDepthMap(){
+                const W = 800, H = 800;
+                const c = document.createElement("canvas"); c.width = W; c.height = H;
+                const x = c.getContext("2d", { willReadFrequently: true });
+                
+                // Clear to white (empty space)
+                x.fillStyle = "#FFF"; x.fillRect(0,0,W,H);
+                const cx = W/2, cy = H/2;
+
+                // Outer Ring
+                x.beginPath(); x.arc(cx, cy, 320, 0, Math.PI*2);
+                x.lineWidth = 40; x.strokeStyle = "#888"; x.stroke();
+
+                // Middle Ring (dashed logic simulated with gaps)
+                for(let i=0; i<12; i++){
+                    x.beginPath(); 
+                    x.arc(cx, cy, 220, (i/12)*Math.PI*2, (i/12)*Math.PI*2 + 0.3);
+                    x.lineWidth = 60; x.strokeStyle = "#333"; x.stroke();
+                }
+
+                // Inner Core Gradient Sphere
+                let gCore = x.createRadialGradient(cx-30, cy-30, 0, cx, cy, 120);
+                gCore.addColorStop(0, "#000"); gCore.addColorStop(0.7, "#555"); gCore.addColorStop(1, "#FFF");
+                x.fillStyle = gCore;
+                x.beginPath(); x.arc(cx, cy, 120, 0, Math.PI*2); x.fill();
+
+                // Geometric Nodes
+                x.fillStyle = "#111";
+                for(let i=0; i<6; i++) {
+                    let a = (i/6)*Math.PI*2;
+                    x.beginPath(); x.arc(cx + Math.cos(a)*320, cy + Math.sin(a)*320, 30, 0, Math.PI*2); x.fill();
+                    // Connectors
+                    x.beginPath(); x.moveTo(cx, cy); x.lineTo(cx + Math.cos(a)*280, cy + Math.sin(a)*280);
+                    x.lineWidth = 10; x.strokeStyle = "#AAA"; x.stroke();
+                }
+
+                const data = x.getImageData(0,0,W,H).data;
+                const pts = [];
+                const step = 4;
+                let minx=W, maxx=0, miny=H, maxy=0;
+
+                for(let py=0; py<H; py+=step){
+                    for(let px=0; px<W; px+=step){
+                        const idx = (py*W+px)*4;
+                        const luma = (data[idx] + data[idx+1] + data[idx+2]) / 3;
+                        const density = (255 - luma) / 255.0;
+                        const probability = Math.pow(density, 1.5) * 2.0;
+                        
+                        if(density > 0.05 && Math.random() < probability) {
+                            pts.push(px, py, density); 
+                            if(px<minx)minx=px; if(px>maxx)maxx=px;
+                            if(py<miny)miny=py; if(py>maxy)maxy=py;
+                        }
+                    }
+                }
+
+                const cxp=(minx+maxx)/2, cyp=(miny+maxy)/2, hpx=(maxy-miny)||1;
+                const local = new Float32Array((pts.length/3) * 2);
+                const depths = new Float32Array(pts.length/3);
+                
+                for(let i=0, j=0; i<pts.length; i+=3, j+=2){
+                    local[j]   = (pts[i]   - cxp)/hpx;
+                    local[j+1] = (cyp - pts[i+1])/hpx;
+                    depths[j/2] = pts[i+2]; 
+                }
+                
+                return { local, depths, count: local.length/2, aspect: (maxx-minx)/hpx };
+            }
+
+            const shape = buildProceduralDepthMap();
+            const SHAPE_ASPECT = shape.aspect;
+            const sc = shape.count;
+
+            const order = new Int32Array(sc);
+            for(let i=0; i<sc; i++) order[i] = i;
+            let seed = 99;
+            const rnd = () => { seed = (seed*1103515245 + 12345) & 0x7fffffff; return seed/0x7fffffff; };
+            for(let i=sc-1; i>0; i--){ const j=(rnd()*(i+1))|0; const t=order[i]; order[i]=order[j]; order[j]=t; }
+
+            const posA = new Float32Array(COUNT*3);
+            const posB = new Float32Array(COUNT*3);
+            const rand = new Float32Array(COUNT*3);
+            const GA = Math.PI*(3 - Math.sqrt(5));
+
+            for(let p=0; p<COUNT; p++){
+                // Drift State (Torus-like distribution instead of sphere)
+                const t = p/COUNT;
+                const u = rnd() * Math.PI * 2;
+                const v = rnd() * Math.PI * 2;
+                const R = 0.8;
+                const r = 0.3 * rnd();
+                
+                posA[p*3]   = (R + r * Math.cos(v)) * Math.cos(u);
+                posA[p*3+1] = (R + r * Math.cos(v)) * Math.sin(u);
+                posA[p*3+2] = r * Math.sin(v);
+
+                // Resolved State
+                const si = order[p % sc];
+                const zOffset = (shape.depths[si] - 0.5) * 0.2;
+
+                posB[p*3]   = shape.local[si*2]   + (rnd()-0.5)*0.008;
+                posB[p*3+1] = shape.local[si*2+1] + (rnd()-0.5)*0.008;
+                posB[p*3+2] = zOffset + (rnd()-0.5)*0.02;
+
+                rand[p*3]   = rnd();
+                rand[p*3+1] = rnd();
+                rand[p*3+2] = rnd();
+            }
+
+            const VERT = `
+            precision highp float;
+            attribute vec3 aPosA;
+            attribute vec3 aPosB;
+            attribute vec3 aRand;
+            
+            uniform float uTime;
+            uniform float uMorph;
+            uniform mat3  uRot;
+            uniform float uFormScale;
+            uniform vec2  uFormOffset;
+            uniform float uShapeHeight;
+            uniform vec2  uShapeOffset;
+            uniform float uAspect;
+            uniform vec2  uMouse;
+            uniform float uMouseOn;
+            uniform float uDrift;
+            uniform float uPointBase;
+            
+            varying float vMix;
+            varying float vDepth;
+            varying float vSeed;
+            
+            void main(){
+                float mm = clamp(uMorph*1.3 - aRand.x*0.3, 0.0, 1.0);
+                mm = mm*mm*(3.0-2.0*mm);
+                
+                vec3 ab = uRot * (aPosA * uFormScale) + vec3(uFormOffset, 0.0);
+                vec3 wd = vec3(aPosB.xy * uShapeHeight + uShapeOffset, aPosB.z);
+                vec3 pos = mix(ab, wd, mm);
+                
+                float amp = uDrift * mix(1.0, 0.05, mm);
+                vec3 d = vec3(
+                    sin(pos.y*3.0 + uTime + aRand.z*6.28) + cos(pos.z*2.0 - uTime*0.8),
+                    cos(pos.z*2.5 + uTime*1.2) + sin(pos.x*2.0 + uTime),
+                    sin(pos.x*2.0 - uTime) + cos(pos.y*1.5 + uTime*0.5)
+                );
+                pos += d * amp;
+                
+                vec2 toP = pos.xy - uMouse;
+                float dist = length(toP);
+                float push = uMouseOn * 0.15 / (dist*dist + 0.05);
+                push = min(push, 0.3);
+                pos.xy += (toP/(dist+1e-4)) * push * (1.0 - mm*0.2);
+                
+                vec3 ndc = vec3(pos.x/uAspect, pos.y, pos.z);
+                gl_Position = vec4(ndc, 1.0);
+                
+                float sz = uPointBase * mix(0.5, 1.5, aRand.y);
+                sz *= mix(1.2, 0.8, mm); // slightly smaller when resolved
+                gl_PointSize = clamp(sz, 1.0, 8.0);
+                
+                vMix = mm; 
+                vDepth = pos.z; 
+                vSeed = aRand.y;
+            }`;
+
+            const FRAG = `
+            precision highp float;
+            varying float vMix;
+            varying float vDepth;
+            varying float vSeed;
+            
+            void main(){
+                vec2 pc = gl_PointCoord - 0.5;
+                if (length(pc) > 0.5) discard;
+                
+                // Light theme specific colors
+                vec3 driftCol = vec3(0.55, 0.36, 0.96); // Violet Accent
+                vec3 shapeCol = vec3(0.15, 0.15, 0.17); // Dark Zinc
+                vec3 bgCol    = vec3(0.98, 0.98, 0.98); // Light Background
+                
+                vec3 col = mix(driftCol, shapeCol, vMix);
+                
+                // Depth fade mapping for 3D illusion
+                float depthFade = clamp(vDepth * 2.5 + 0.5, 0.0, 1.0);
+                col = mix(bgCol, col, mix(0.4, 1.0, depthFade));
+                
+                float alpha = mix(0.5, 0.9, vMix);
+                
+                gl_FragColor = vec4(col, alpha);
+            }`;
+
+            const compile = (type, src) => {
+                const s = gl.createShader(type);
+                gl.shaderSource(s, src); gl.compileShader(s);
+                if(!gl.getShaderParameter(s, gl.COMPILE_STATUS)){
+                    console.error(gl.getShaderInfoLog(s)); gl.deleteShader(s); return null;
+                }
+                return s;
+            };
+
+            const vs = compile(gl.VERTEX_SHADER, VERT);
+            const fs = compile(gl.FRAGMENT_SHADER, FRAG);
+            const prog = gl.createProgram();
+            gl.attachShader(prog, vs); gl.attachShader(prog, fs); gl.linkProgram(prog);
+            gl.useProgram(prog);
+
+            const attrib = (name, data) => {
+                const b = gl.createBuffer();
+                gl.bindBuffer(gl.ARRAY_BUFFER, b);
+                gl.bufferData(gl.ARRAY_BUFFER, data, gl.STATIC_DRAW);
+                const loc = gl.getAttribLocation(prog, name);
+                gl.enableVertexAttribArray(loc);
+                gl.vertexAttribPointer(loc, 3, gl.FLOAT, false, 0, 0);
+                return b;
+            };
+
+            attrib("aPosA", posA);
+            attrib("aPosB", posB);
+            attrib("aRand", rand);
+
+            const U = {};
+            ["uTime","uMorph","uRot","uFormScale","uFormOffset","uShapeHeight","uShapeOffset",
+             "uAspect","uMouse","uMouseOn","uDrift","uPointBase"].forEach(n => {
+                U[n] = gl.getUniformLocation(prog, n);
+            });
+
+            gl.disable(gl.DEPTH_TEST);
+            gl.enable(gl.BLEND);
+            gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+            gl.clearColor(0,0,0,0);
+
+            gl.uniform1f(U.uDrift, isMobile ? 0.05 : 0.08);
+
+            let aspect = 1;
+            const layout = () => {
+                const w = container.clientWidth, h = container.clientHeight;
+                aspect = w/h;
+                
+                const maxH = isMobile ? 0.7 : 0.85;
+                const maxW = isMobile ? 1.4 : 1.2 * aspect;
+                
+                const shapeH = Math.min(maxH, maxW / SHAPE_ASPECT);
+                const shapeW = shapeH * SHAPE_ASPECT;
+                
+                gl.uniform1f(U.uShapeHeight, shapeH);
+                gl.uniform2f(U.uShapeOffset, -shapeW/2, -shapeH/2);
+
+                gl.uniform1f(U.uFormScale, isMobile ? 0.5 : 0.7);
+                gl.uniform2f(U.uFormOffset, 0.0, 0.0);
+
+                gl.uniform1f(U.uAspect, aspect);
+                gl.uniform1f(U.uPointBase, POINT_CSS * RENDER_SCALE * 0.5);
+            };
+
+            const resize = () => {
+                const w = Math.floor(container.clientWidth * RENDER_SCALE);
+                const h = Math.floor(container.clientHeight * RENDER_SCALE);
+                if(canvas.width !== w || canvas.height !== h){
+                    canvas.width = w; canvas.height = h;
+                }
+                gl.viewport(0, 0, canvas.width, canvas.height);
+                layout();
+            };
+
+            const rotBuf = new Float32Array(9);
+            const setRot = (ax, ay) => {
+                const cx=Math.cos(ax),sx=Math.sin(ax),cy=Math.cos(ay),sy=Math.sin(ay);
+                rotBuf[0]=cy;     rotBuf[1]=0;   rotBuf[2]=-sy;
+                rotBuf[3]=sy*sx;  rotBuf[4]=cx;  rotBuf[5]=cy*sx;
+                rotBuf[6]=sy*cx;  rotBuf[7]=-sx; rotBuf[8]=cy*cx;
+                gl.uniformMatrix3fv(U.uRot, false, rotBuf);
+            };
+
+            const morphAt = (time) => {
+                const T = 20.0, p = (time % T)/T;
+                let m;
+                if(p < 0.2)       m = p/0.2; 
+                else if(p < 0.6)  m = 1.0;    
+                else if(p < 0.8)  m = 1.0 - (p-0.6)/0.2; 
+                else              m = 0.0;    
+                return m*m*(3.0-2.0*m);
+            };
+
+            let mTargetX = 99, mTargetY = 99, mX = 99, mY = 99;
+            let mOn = 0, mOnTarget = 0, lastMove = -9999;
+            
+            const onMove = (e) => {
+                const rect = container.getBoundingClientRect();
+                const pt = (e.touches && e.touches[0]) ? e.touches[0] : e;
+                const nx = ((pt.clientX - rect.left) / rect.width) * 2 - 1;
+                const ny = -(((pt.clientY - rect.top) / rect.height) * 2 - 1);
+                mTargetX = nx * aspect; 
+                mTargetY = ny;
+                mOnTarget = 1.0; 
+                lastMove = performance.now();
+            };
+
+            if(!prefersReduced){
+                container.addEventListener("mousemove", onMove, { passive:true });
+                container.addEventListener("touchmove", onMove, { passive:true });
+                container.addEventListener("mouseleave", () => { mOnTarget = 0.0; });
+            }
+
+            let raf = 0, running = false, start = performance.now();
+            let lastState = "", coordAcc = 0;
+
+            const setState = (s) => {
+                if(s !== lastState){ lastState = s; elState.textContent = s; }
+            };
+
+            const renderFrame = (now) => {
+                const time = (now - start)/1000;
+                const m = morphAt(time);
+                
+                mX += (mTargetX - mX)*0.1; 
+                mY += (mTargetY - mY)*0.1;
+                if(now - lastMove > 2000) mOnTarget = 0;
+                mOn += (mOnTarget - mOn)*0.05;
+
+                const ax = 0.2 * Math.sin(time*0.15) + 0.2;
+                const ay = time * 0.2;
+                setRot(ax, ay);
+
+                gl.uniform1f(U.uTime, time);
+                gl.uniform1f(U.uMorph, m);
+                gl.uniform2f(U.uMouse, mX, mY);
+                gl.uniform1f(U.uMouseOn, mOn);
+
+                gl.clear(gl.COLOR_BUFFER_BIT);
+                gl.drawArrays(gl.POINTS, 0, COUNT);
+
+                setState(m > 0.95 ? "STRUCTURE LOCKED" : (m < 0.05 ? "FLUID DISPERSION" : "COMPUTING"));
+                
+                if((coordAcc = (coordAcc+1) % 10) === 0){
+                    const phase = (ay % (Math.PI*2)).toFixed(2);
+                    elCoords.textContent = `CLB ${phase}`;
+                }
+            };
+
+            const loop = (now) => {
+                if(!running) return;
+                renderFrame(now);
+                raf = requestAnimationFrame(loop);
+            };
+
+            const play = () => {
+                if(running || prefersReduced) return;
+                running = true; 
+                raf = requestAnimationFrame(loop);
+            };
+            
+            const pause = () => {
+                running = false;
+                if(raf){ cancelAnimationFrame(raf); raf = 0; }
+            };
+
+            let resizeQueued = false;
+            window.addEventListener("resize", () => {
+                if(resizeQueued) return; 
+                resizeQueued = true;
+                requestAnimationFrame(() => {
+                    resizeQueued = false; resize();
+                    if(prefersReduced || !running) renderFrame(performance.now());
+                });
+            });
+
+            document.addEventListener("visibilitychange", () => { document.hidden ? pause() : play(); });
+
+            resize();
+            
+            if(prefersReduced){
+                setRot(0.2, 0.0);
+                gl.uniform1f(U.uTime, 12.0);
+                gl.uniform1f(U.uMorph, 1.0);
+                gl.uniform2f(U.uMouse, 99, 99);
+                gl.uniform1f(U.uMouseOn, 0);
+                gl.clear(gl.COLOR_BUFFER_BIT);
+                gl.drawArrays(gl.POINTS, 0, COUNT);
+                setState("STATIC");
+                elCoords.textContent = `SYS RDY`;
+            } else {
+                play();
+            }
+        })();
+    </script>
+</body>
+</html>

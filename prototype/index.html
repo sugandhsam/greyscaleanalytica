@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Greyscale Analytica — Market intelligence for strategy teams</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='14' fill='%2318181B'/%3E%3Ccircle cx='16' cy='16' r='9' fill='none' stroke='%23E4E4E7' stroke-opacity='0.5' stroke-width='1.5'/%3E%3Cpath d='M16 16 L25.5 9.5' stroke='%23F1CD26' stroke-width='2.5' stroke-linecap='round'/%3E%3Ccircle cx='10.5' cy='12' r='2.2' fill='%23F1CD26'/%3E%3C/svg%3E">
+<script>document.documentElement.classList.add('js');</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&family=Geist+Mono:wght@300;400&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://code.iconify.design/iconify-icon/1.0.7/iconify-icon.min.js"></script>
+<script>
+  /* Design tokens: docs/Quantum-Particulate-Render-Matrix-DESIGN.md only.
+     Neutrals come from Tailwind's zinc scale, which matches the doc exactly:
+     zinc-50 #FAFAFA (background), zinc-100 #F4F4F5 (border), zinc-200 #E4E4E7 (border),
+     zinc-800 #27272A (text-primary / secondary), zinc-900 #18181B (text-secondary). */
+  tailwind.config = {
+    theme: {
+      extend: {
+        fontFamily: {
+          sans: ['Inter', 'ui-sans-serif', 'system-ui', '-apple-system', 'sans-serif'],
+          // mono: Sam's override for the headline only; the doc defines Inter alone
+          mono: ['"Geist Mono"', 'ui-monospace', 'SFMono-Regular', 'Menlo', 'monospace']
+        },
+        // primary: Sam's accent override (#F1CD26), replacing the doc's #8B5CF6
+        colors: { primary: '#F1CD26', tertiary: '#FB61FB' },
+        boxShadow: {
+          panel: '20px 0 40px 0 rgba(0,0,0,0.03)',
+          sm: '0 1px 2px 0 rgba(0,0,0,0.05)'
+        }
+      }
+    }
+  };
+</script>
+<style>
+  /* Intro: minimal motion, 2000ms, ease. Hidden only when JS runs. */
+  .js .ui-panel, .js .ui-el { opacity: 0; }
+  .js .ui-el { transform: translateY(12px); }
+  .ui-panel, .ui-el { transition: opacity 2s ease, transform 2s ease; }
+  .is-ready .ui-panel, .is-ready .ui-el { opacity: 1; transform: none; }
+  @media (prefers-reduced-motion: reduce) {
+    .ui-panel, .ui-el { transition: none; transform: none !important; }
+    .animate-pulse { animation: none !important; }
+  }
+</style>
+</head>
+<body class="bg-zinc-50 text-zinc-900 font-sans antialiased m-0 selection:bg-primary/40">
+
+  <div class="flex flex-col lg:flex-row w-full min-h-screen relative overflow-x-hidden">
+
+    <!-- Left: hero copy -->
+    <section class="ui-panel w-full lg:w-[45%] bg-white flex flex-col relative z-20 border-b lg:border-b-0 lg:border-r border-zinc-200 shadow-panel">
+
+      <header class="ui-el flex items-center justify-between p-6 lg:p-8 border-b border-zinc-100">
+        <a href="#" class="text-xs font-medium tracking-widest uppercase text-zinc-800">Greyscale Analytica</a>
+        <span class="flex items-center gap-2 text-xs font-medium text-zinc-800/50">
+          <iconify-icon icon="solar:lock-keyhole-minimalistic-linear"></iconify-icon>
+          Private beta
+        </span>
+      </header>
+
+      <div class="flex-1 flex flex-col justify-center p-6 lg:p-12 xl:p-16 py-16 lg:py-12">
+
+        <div class="ui-el mb-8" style="transition-delay:.1s">
+          <div class="flex items-center gap-3 mb-4 text-xs font-medium tracking-[0.2em] uppercase text-zinc-800">
+            <span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+            Market intelligence
+          </div>
+          <h1 class="font-mono font-light text-[30px] sm:text-[40px] lg:text-[36px] xl:text-[46px] 2xl:text-[56px] tracking-tight leading-[1.1] text-zinc-900">
+            Find the signal<br>
+            <span class="text-zinc-800/40">before it’s<br>priced in</span>
+          </h1>
+        </div>
+
+        <p class="ui-el text-lg lg:text-xl leading-relaxed font-light tracking-tight text-zinc-800/80 max-w-[34ch] mb-10" style="transition-delay:.2s">
+          Signal-detection models that score competitor moves, category shifts and demand anomalies by statistical significance, then rank them by impact on your strategy.
+        </p>
+
+        <!-- Gradient border card -->
+        <div class="ui-el relative rounded-2xl p-6 lg:p-8 mb-10 shadow-sm" style="transition-delay:.3s;background:linear-gradient(#ffffff,#ffffff) padding-box,linear-gradient(135deg,rgba(241,205,38,0.6),rgba(228,228,231,0.6)) border-box;border:1px solid transparent">
+          <div class="flex flex-col gap-6">
+            <div class="flex justify-between items-end border-b border-zinc-100 pb-4">
+              <div>
+                <div class="text-xs font-medium tracking-widest uppercase text-zinc-800/50 mb-1">Signals in view</div>
+                <div class="text-2xl font-medium tracking-tight text-zinc-900 tabular-nums" id="ptCount">0</div>
+              </div>
+              <div class="text-right">
+                <div class="text-xs font-medium tracking-widest uppercase text-zinc-800/50 mb-1">State</div>
+                <div class="flex items-center gap-2 justify-end text-sm font-medium text-zinc-800">
+                  <i id="led" class="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></i>
+                  <span id="stateTxt">Scanning</span>
+                </div>
+              </div>
+            </div>
+            <div class="flex items-center justify-between gap-4">
+              <div class="flex items-center gap-2 text-xs font-medium text-zinc-800 bg-zinc-50 px-3 py-1.5 rounded-md border border-zinc-200">
+                <iconify-icon icon="solar:mouse-minimalistic-linear" class="text-base"></iconify-icon>
+                Move to disturb the field
+              </div>
+              <div class="text-xs font-medium text-zinc-800/40 tabular-nums" id="coords">Phase 0.00</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="ui-el flex flex-wrap items-center gap-3" style="transition-delay:.4s">
+          <button type="button" disabled class="inline-flex items-center gap-2 rounded-md bg-primary/50 px-4 py-2.5 text-xs font-medium text-zinc-900/60 cursor-not-allowed">
+            <iconify-icon icon="solar:clock-circle-linear" class="text-base"></iconify-icon>
+            Coming soon
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Right: WebGL particle field -->
+    <div id="field" class="ui-panel relative w-full lg:w-[55%] h-[60vh] lg:h-screen lg:sticky top-0 bg-zinc-50 overflow-hidden z-10 flex items-center justify-center" style="transition-delay:.2s" aria-hidden="true">
+      <div class="absolute inset-0 pointer-events-none opacity-20 z-0" style="background-size:40px 40px;background-image:linear-gradient(to right,#e4e4e7 1px,transparent 1px),linear-gradient(to bottom,#e4e4e7 1px,transparent 1px)"></div>
+
+      <div class="absolute top-8 left-8 w-8 h-8 border-t border-l border-zinc-800/20 z-20"></div>
+      <div class="absolute bottom-8 right-8 w-8 h-8 border-b border-r border-zinc-800/20 z-20"></div>
+
+      <div class="absolute inset-0 z-10 overflow-hidden flex items-center justify-center">
+        <canvas id="gl" class="w-full h-full block opacity-90"></canvas>
+      </div>
+
+      <div class="absolute top-8 right-8 text-xs font-medium tracking-[0.3em] uppercase text-zinc-800/30 z-20 hidden md:block">
+        Noise → Signal
+      </div>
+      <div class="absolute bottom-8 left-8 text-xs font-medium tracking-[0.3em] uppercase text-zinc-800/30 z-20 hidden md:block">
+        Market field · Live
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /* ---------- intro ---------- */
+    requestAnimationFrame(function () {
+      requestAnimationFrame(function () { document.body.classList.add('is-ready'); });
+    });
+
+    /* ---------- WebGL particle field (from the Quantum Particulate reference) ---------- */
+    (function () {
+      'use strict';
+
+      var container = document.getElementById('field');
+      var canvas = document.getElementById('gl');
+      var elState = document.getElementById('stateTxt');
+      var elCoords = document.getElementById('coords');
+      var elPt = document.getElementById('ptCount');
+
+      var prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      var isMobile = window.matchMedia('(max-width: 1024px)').matches;
+
+      var COUNT = isMobile ? 15000 : 35000;
+      var RENDER_SCALE = window.devicePixelRatio || 1;
+      var POINT_CSS = isMobile ? 3.0 : 2.5;
+
+      elPt.textContent = COUNT.toLocaleString();
+
+      var gl = canvas.getContext('webgl', { alpha: true, premultipliedAlpha: false, antialias: true, depth: false });
+      if (!gl) return; // DOM fallback: the grid and copy still render
+
+      // Procedural target shape: a round radar scope, line-drawing look.
+      // Dark outline = dense dots, light fill = sparse haze. Darker = denser.
+      function buildProceduralDepthMap() {
+        var W = 900, H = 900;
+        var FILL = '#E8E8E8', LINE = '#111', ACCENT = '#000', GRID = '#707070';
+        var cx = W / 2, cy = H / 2, SCREEN = 300, DEG = Math.PI / 180;
+
+        function canvas2d() {
+          var c = document.createElement('canvas'); c.width = W; c.height = H;
+          var x = c.getContext('2d', { willReadFrequently: true });
+          x.fillStyle = '#FFF'; x.fillRect(0, 0, W, H);
+          x.lineJoin = 'round'; x.lineCap = 'round';
+          return x;
+        }
+        function polar(r, deg) { return [cx + Math.cos(deg * DEG) * r, cy + Math.sin(deg * DEG) * r]; }
+
+        // --- Static scope: bezel, ticks, rings, crosshair, blips ---
+        var x = canvas2d(), i;
+        function outlined(lw) { x.fillStyle = FILL; x.fill(); x.strokeStyle = LINE; x.lineWidth = lw; x.stroke(); }
+
+        x.beginPath(); x.arc(cx, cy, 360, 0, Math.PI * 2); outlined(16);
+        // Glass is left near-white (below the density threshold) so the grid, sweep and blips stand out
+        x.beginPath(); x.arc(cx, cy, SCREEN, 0, Math.PI * 2); x.fillStyle = '#F8F8F8'; x.fill();
+
+        // Bearing ticks (long every 30°)
+        x.strokeStyle = '#222';
+        for (i = 0; i < 72; i++) {
+          var major = i % 6 === 0, p0 = polar(major ? 312 : 328, i * 5), p1 = polar(345, i * 5);
+          x.beginPath(); x.moveTo(p0[0], p0[1]); x.lineTo(p1[0], p1[1]); x.lineWidth = major ? 8 : 4; x.stroke();
+        }
+
+        // Range rings + crosshair
+        x.strokeStyle = GRID; x.lineWidth = 6;
+        [90, 180, 270].forEach(function (r) { x.beginPath(); x.arc(cx, cy, r, 0, Math.PI * 2); x.stroke(); });
+        x.lineWidth = 4;
+        x.beginPath(); x.moveTo(cx - SCREEN, cy); x.lineTo(cx + SCREEN, cy); x.moveTo(cx, cy - SCREEN); x.lineTo(cx, cy + SCREEN); x.stroke();
+
+        // Blips: [range, bearing, size]; the first is ringed as locked
+        [[205, -145, 24], [120, 150, 16], [250, 32, 18], [165, 228, 14], [80, -15, 12]].forEach(function (b, n) {
+          var p = polar(b[0], b[1]);
+          x.beginPath(); x.arc(p[0], p[1], b[2], 0, Math.PI * 2); x.fillStyle = ACCENT; x.fill();
+          if (n === 0) { x.beginPath(); x.arc(p[0], p[1], 50, 0, Math.PI * 2); x.strokeStyle = LINE; x.lineWidth = 6; x.stroke(); }
+        });
+
+        // Sweep beam: dark leading edge, fading over 70° behind it
+        var LEAD = -55, TRAIL = 70, STEPS = 35;
+        for (i = STEPS - 1; i >= 0; i--) {
+          var k = i / STEPS, shade = Math.round(85 + k * 155); // 85 (dark) → 240 (faint)
+          x.beginPath(); x.moveTo(cx, cy);
+          x.arc(cx, cy, SCREEN, (LEAD - (i + 1) * TRAIL / STEPS) * DEG, (LEAD - i * TRAIL / STEPS) * DEG + 0.01);
+          x.closePath(); x.fillStyle = 'rgb(' + shade + ',' + shade + ',' + shade + ')'; x.fill();
+        }
+        var lead = polar(SCREEN, LEAD);
+        x.beginPath(); x.moveTo(cx, cy); x.lineTo(lead[0], lead[1]); x.strokeStyle = ACCENT; x.lineWidth = 10; x.stroke();
+
+        // Centre
+        x.beginPath(); x.arc(cx, cy, 14, 0, Math.PI * 2); x.fillStyle = ACCENT; x.fill();
+
+        // Sample the drawing into a point cloud
+        var data = x.getImageData(0, 0, W, H).data;
+        var pts = [], step = 4, minx = W, maxx = 0, miny = H, maxy = 0;
+        for (var py = 0; py < H; py += step) {
+          for (var px = 0; px < W; px += step) {
+            var idx = (py * W + px) * 4;
+            var density = (255 - (data[idx] + data[idx + 1] + data[idx + 2]) / 3) / 255;
+            if (density > 0.05 && Math.random() < Math.pow(density, 1.5) * 2.0) {
+              pts.push(px, py, density);
+              if (px < minx) minx = px; if (px > maxx) maxx = px;
+              if (py < miny) miny = py; if (py > maxy) maxy = py;
+            }
+          }
+        }
+
+        var cxp = (minx + maxx) / 2, cyp = (miny + maxy) / 2, hpx = (maxy - miny) || 1;
+        var local = new Float32Array((pts.length / 3) * 2);
+        var depths = new Float32Array(pts.length / 3);
+        for (var k = 0, j = 0; k < pts.length; k += 3, j += 2) {
+          local[j] = (pts[k] - cxp) / hpx;
+          local[j + 1] = (cyp - pts[k + 1]) / hpx;
+          depths[j / 2] = pts[k + 2];
+        }
+        return { local: local, depths: depths, count: local.length / 2, aspect: (maxx - minx) / hpx };
+      }
+
+      var shape = buildProceduralDepthMap();
+      var sc = shape.count;
+
+      var order = new Int32Array(sc);
+      for (var i = 0; i < sc; i++) order[i] = i;
+      var seed = 99;
+      var rnd = function () { seed = (seed * 1103515245 + 12345) & 0x7fffffff; return seed / 0x7fffffff; };
+      for (i = sc - 1; i > 0; i--) { var jj = (rnd() * (i + 1)) | 0; var t = order[i]; order[i] = order[jj]; order[jj] = t; }
+
+      var posA = new Float32Array(COUNT * 3);
+      var posB = new Float32Array(COUNT * 3);
+      var rand = new Float32Array(COUNT * 3);
+
+      for (var p = 0; p < COUNT; p++) {
+        // Dispersed state: torus of noise
+        var u = rnd() * Math.PI * 2, v = rnd() * Math.PI * 2, R = 0.8, r = 0.3 * rnd();
+        posA[p * 3] = (R + r * Math.cos(v)) * Math.cos(u);
+        posA[p * 3 + 1] = (R + r * Math.cos(v)) * Math.sin(u);
+        posA[p * 3 + 2] = r * Math.sin(v);
+
+        // Resolved state: the procedural shape
+        var si = order[p % sc];
+        posB[p * 3] = shape.local[si * 2] + (rnd() - 0.5) * 0.008;
+        posB[p * 3 + 1] = shape.local[si * 2 + 1] + (rnd() - 0.5) * 0.008;
+        posB[p * 3 + 2] = (shape.depths[si] - 0.5) * 0.2 + (rnd() - 0.5) * 0.02;
+
+        rand[p * 3] = rnd(); rand[p * 3 + 1] = rnd(); rand[p * 3 + 2] = rnd();
+      }
+
+      var VERT = [
+        'precision highp float;',
+        'attribute vec3 aPosA; attribute vec3 aPosB; attribute vec3 aRand;',
+        'uniform float uTime; uniform float uMorph; uniform mat3 uRot; uniform float uFormScale;',
+        'uniform vec2 uFormOffset; uniform float uShapeHeight; uniform vec2 uShapeOffset; uniform float uAspect;',
+        'uniform vec2 uMouse; uniform float uMouseOn; uniform float uDrift; uniform float uPointBase;',
+        'varying float vMix; varying float vDepth;',
+        'void main(){',
+        '  float mm = clamp(uMorph*1.3 - aRand.x*0.3, 0.0, 1.0);',
+        '  mm = mm*mm*(3.0-2.0*mm);',
+        '  vec3 ab = uRot * (aPosA * uFormScale) + vec3(uFormOffset, 0.0);',
+        '  vec3 wd = vec3(aPosB.xy * uShapeHeight + uShapeOffset, aPosB.z);',
+        '  vec3 pos = mix(ab, wd, mm);',
+        '  float amp = uDrift * mix(1.0, 0.05, mm);',
+        '  vec3 d = vec3(',
+        '    sin(pos.y*3.0 + uTime + aRand.z*6.28) + cos(pos.z*2.0 - uTime*0.8),',
+        '    cos(pos.z*2.5 + uTime*1.2) + sin(pos.x*2.0 + uTime),',
+        '    sin(pos.x*2.0 - uTime) + cos(pos.y*1.5 + uTime*0.5));',
+        '  pos += d * amp;',
+        '  vec2 toP = pos.xy - uMouse;',
+        '  float dist = length(toP);',
+        '  float push = min(uMouseOn * 0.15 / (dist*dist + 0.05), 0.3);',
+        '  pos.xy += (toP/(dist+1e-4)) * push * (1.0 - mm*0.2);',
+        '  gl_Position = vec4(pos.x/uAspect, pos.y, pos.z, 1.0);',
+        '  float sz = uPointBase * mix(0.5, 1.5, aRand.y) * mix(1.2, 0.8, mm);',
+        '  gl_PointSize = clamp(sz, 1.0, 8.0);',
+        '  vMix = mm; vDepth = pos.z;',
+        '}'
+      ].join('\n');
+
+      var FRAG = [
+        'precision highp float;',
+        'varying float vMix; varying float vDepth;',
+        'void main(){',
+        '  vec2 pc = gl_PointCoord - 0.5;',
+        '  if (length(pc) > 0.5) discard;',
+        '  vec3 driftCol = vec3(0.945, 0.804, 0.149);', // #F1CD26 primary
+        '  vec3 shapeCol = vec3(0.153, 0.153, 0.165);', // #27272A neutral
+        '  vec3 bgCol    = vec3(0.980, 0.980, 0.980);', // #FAFAFA background
+        '  vec3 col = mix(driftCol, shapeCol, vMix);',
+        '  float depthFade = clamp(vDepth * 2.5 + 0.5, 0.0, 1.0);',
+        '  col = mix(bgCol, col, mix(0.4, 1.0, depthFade));',
+        '  gl_FragColor = vec4(col, mix(0.5, 0.9, vMix));',
+        '}'
+      ].join('\n');
+
+      function compile(type, src) {
+        var s = gl.createShader(type);
+        gl.shaderSource(s, src); gl.compileShader(s);
+        if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) { gl.deleteShader(s); return null; }
+        return s;
+      }
+      var vs = compile(gl.VERTEX_SHADER, VERT), fs = compile(gl.FRAGMENT_SHADER, FRAG);
+      if (!vs || !fs) return;
+      var prog = gl.createProgram();
+      gl.attachShader(prog, vs); gl.attachShader(prog, fs); gl.linkProgram(prog);
+      if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) return;
+      gl.useProgram(prog);
+
+      function attrib(name, data) {
+        gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer());
+        gl.bufferData(gl.ARRAY_BUFFER, data, gl.STATIC_DRAW);
+        var loc = gl.getAttribLocation(prog, name);
+        gl.enableVertexAttribArray(loc);
+        gl.vertexAttribPointer(loc, 3, gl.FLOAT, false, 0, 0);
+      }
+      attrib('aPosA', posA); attrib('aPosB', posB); attrib('aRand', rand);
+
+      var U = {};
+      ['uTime', 'uMorph', 'uRot', 'uFormScale', 'uFormOffset', 'uShapeHeight', 'uShapeOffset',
+       'uAspect', 'uMouse', 'uMouseOn', 'uDrift', 'uPointBase'].forEach(function (n) {
+        U[n] = gl.getUniformLocation(prog, n);
+      });
+
+      gl.disable(gl.DEPTH_TEST);
+      gl.enable(gl.BLEND);
+      gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+      gl.clearColor(0, 0, 0, 0);
+      gl.uniform1f(U.uDrift, isMobile ? 0.05 : 0.08);
+
+      var aspect = 1;
+      function layout() {
+        var w = container.clientWidth, h = container.clientHeight;
+        aspect = w / h;
+        var maxH = isMobile ? 1.0 : 1.05;           // shape height, as a share of the panel (2.0 = full height)
+        var maxW = (isMobile ? 1.5 : 1.2) * aspect; // shape width, same units
+        var shapeH = Math.min(maxH, maxW / shape.aspect);
+        gl.uniform1f(U.uShapeHeight, shapeH);
+        gl.uniform2f(U.uShapeOffset, 0.0, 0.0); // shape coords are already centred
+        gl.uniform1f(U.uFormScale, isMobile ? 0.5 : 0.7);
+        gl.uniform2f(U.uFormOffset, 0.0, 0.0);
+        gl.uniform1f(U.uAspect, aspect);
+        gl.uniform1f(U.uPointBase, POINT_CSS * RENDER_SCALE * 0.5);
+      }
+
+      function resize() {
+        var w = Math.floor(container.clientWidth * RENDER_SCALE);
+        var h = Math.floor(container.clientHeight * RENDER_SCALE);
+        if (canvas.width !== w || canvas.height !== h) { canvas.width = w; canvas.height = h; }
+        gl.viewport(0, 0, canvas.width, canvas.height);
+        layout();
+      }
+
+      var rotBuf = new Float32Array(9);
+      function setRot(ax, ay) {
+        var cx = Math.cos(ax), sx = Math.sin(ax), cy = Math.cos(ay), sy = Math.sin(ay);
+        rotBuf[0] = cy;      rotBuf[1] = 0;   rotBuf[2] = -sy;
+        rotBuf[3] = sy * sx; rotBuf[4] = cx;  rotBuf[5] = cy * sx;
+        rotBuf[6] = sy * cx; rotBuf[7] = -sx; rotBuf[8] = cy * cx;
+        gl.uniformMatrix3fv(U.uRot, false, rotBuf);
+      }
+
+      // 20s cycle: disperse → resolve → hold → disperse
+      function morphAt(time) {
+        var T = 20.0, ph = (time % T) / T, m;
+        if (ph < 0.2) m = ph / 0.2;
+        else if (ph < 0.6) m = 1.0;
+        else if (ph < 0.8) m = 1.0 - (ph - 0.6) / 0.2;
+        else m = 0.0;
+        return m * m * (3.0 - 2.0 * m);
+      }
+
+      var mTargetX = 99, mTargetY = 99, mX = 99, mY = 99, mOn = 0, mOnTarget = 0, lastMove = -9999;
+      function onMove(e) {
+        var rect = container.getBoundingClientRect();
+        var pt = (e.touches && e.touches[0]) ? e.touches[0] : e;
+        mTargetX = (((pt.clientX - rect.left) / rect.width) * 2 - 1) * aspect;
+        mTargetY = -(((pt.clientY - rect.top) / rect.height) * 2 - 1);
+        mOnTarget = 1.0;
+        lastMove = performance.now();
+      }
+      if (!prefersReduced) {
+        container.addEventListener('mousemove', onMove, { passive: true });
+        container.addEventListener('touchmove', onMove, { passive: true });
+        container.addEventListener('mouseleave', function () { mOnTarget = 0.0; });
+      }
+
+      var raf = 0, running = false, start = performance.now(), lastState = '', coordAcc = 0;
+      function setState(s) { if (s !== lastState) { lastState = s; elState.textContent = s; } }
+
+      function renderFrame(now) {
+        var time = (now - start) / 1000;
+        var m = morphAt(time);
+        mX += (mTargetX - mX) * 0.1;
+        mY += (mTargetY - mY) * 0.1;
+        if (now - lastMove > 2000) mOnTarget = 0;
+        mOn += (mOnTarget - mOn) * 0.05;
+
+        var ax = 0.2 * Math.sin(time * 0.15) + 0.2, ay = time * 0.2;
+        setRot(ax, ay);
+        gl.uniform1f(U.uTime, time);
+        gl.uniform1f(U.uMorph, m);
+        gl.uniform2f(U.uMouse, mX, mY);
+        gl.uniform1f(U.uMouseOn, mOn);
+        gl.clear(gl.COLOR_BUFFER_BIT);
+        gl.drawArrays(gl.POINTS, 0, COUNT);
+
+        setState(m > 0.95 ? 'Resolved' : (m < 0.05 ? 'Scanning' : 'Synthesising'));
+        if ((coordAcc = (coordAcc + 1) % 10) === 0) {
+          elCoords.textContent = 'Phase ' + (ay % (Math.PI * 2)).toFixed(2);
+        }
+      }
+
+      function loop(now) {
+        if (!running) return;
+        renderFrame(now);
+        raf = requestAnimationFrame(loop);
+      }
+      function play() { if (running || prefersReduced) return; running = true; raf = requestAnimationFrame(loop); }
+      function pause() { running = false; if (raf) { cancelAnimationFrame(raf); raf = 0; } }
+
+      function drawStatic() {
+        setRot(0.2, 0.0);
+        gl.uniform1f(U.uTime, 12.0);
+        gl.uniform1f(U.uMorph, 1.0);
+        gl.uniform2f(U.uMouse, 99, 99);
+        gl.uniform1f(U.uMouseOn, 0);
+        gl.clear(gl.COLOR_BUFFER_BIT);
+        gl.drawArrays(gl.POINTS, 0, COUNT);
+        setState('Resolved');
+        elCoords.textContent = 'Static';
+      }
+
+      var resizeQueued = false;
+      window.addEventListener('resize', function () {
+        if (resizeQueued) return;
+        resizeQueued = true;
+        requestAnimationFrame(function () {
+          resizeQueued = false; resize();
+          if (prefersReduced) drawStatic(); else if (!running) renderFrame(performance.now());
+        });
+      });
+      document.addEventListener('visibilitychange', function () { document.hidden ? pause() : play(); });
+
+      resize();
+      if (prefersReduced) drawStatic(); else play();
+    })();
+  </script>
+</body>
+</html>
